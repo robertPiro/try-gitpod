@@ -1,0 +1,7 @@
+
+image:
+    file: Dockerfile
+
+vscode:
+  extensions:
+    - scalameta.metals
