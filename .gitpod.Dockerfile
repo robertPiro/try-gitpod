@@ -1,4 +1,4 @@
 FROM gitpod/workspace-full
 # Install SBT and prep Scala env
-USER root
+USER gitpod
 RUN brew install scala sbt
