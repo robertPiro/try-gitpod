@@ -11,7 +11,7 @@
             "mainClass": "Main", //specify pkg here: com.example.Main
             //"buildTarget": "app"," //for cases with multpl packages?
             "args": [],
-            "jvmOptions": []
+            "jvmOptions": ["-XX:+UseContainerSupport", "-XX:ActiveProcessorCount=1"]
           } 
     ]
 }
