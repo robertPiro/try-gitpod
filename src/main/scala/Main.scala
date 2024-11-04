@@ -2,7 +2,7 @@ object Main {
   def main(args:Array[String]):Unit =
     println("Hello World!")
     println(max(List(3,1,2)))
-    println(and(true, false))u
+    println(and(true, false))
 
   def max(l:List[Int]): Int = 
     if l.isEmpty then throw Exception("List is empty. Max undefined")
