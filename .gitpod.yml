@@ -1,7 +1,7 @@
 image:
     file: .gitpod.Dockerfile
 tasks:
-  - init: sbt compile
+  - init: unset JAVA_TOOL_OPTIONS; sbt compile
   - name: Run
     command: sbt run
 
