@@ -5,6 +5,8 @@ object Week01 {
         val sqrt_2 = newton_raphson(x=> x*x-2, x=> 2*x, 3)
         println(sqrt_2)
         println(gcd(15, 27))
+        val l = List(1,2,3,4,5)
+        println(s"""${l} apply fac ${l.map(fac)} """ )
 
 
     def newton_raphson(f:Double => Double, fprime: Double => Double, start_value:Double, iter:Int =1000):Double =
@@ -16,4 +18,13 @@ object Week01 {
 
     def gcd(x:Int, y:Int):Int =
         if y == 0 then x else gcd(y, x%y)
+
+    def fac(x:Int): Int =
+        if x <= 0
+        then 1
+        else x * fac(x-1)
+    
+    def ackermann(x:Int, y:Int, op:Int): Int = ???
+        
+
 }
