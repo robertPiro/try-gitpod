@@ -12,6 +12,15 @@
             //"buildTarget": "app"," //for cases with multpl packages?
             "args": [],
             "jvmOptions": ["-XX:+UseContainerSupport", "-XX:ActiveProcessorCount=1"]
+        } ,
+        {
+            "type": "scala",
+            "request": "launch",
+            "name": "Week01",
+            "mainClass": "week01.Week01", //specify pkg here: com.example.Main
+            //"buildTarget": "app"," //for cases with multpl packages?
+            "args": [],
+            "jvmOptions": ["-XX:+UseContainerSupport", "-XX:ActiveProcessorCount=1"]
           } 
     ]
 }
