@@ -1,4 +1,4 @@
 FROM gitpod/workspace-full
 # Install SBT and prep Scala env
-USER root
-RUN brew install scala sbt
+USER gitpod
+RUN brew install sbt ammonite-repl
