@@ -11,6 +11,9 @@ Install NPM infrastructure
 Start Vite's continuous compiling
 ```npm run dev```
 
+Start SBT
+```sbt
+~fastLinkJS```
 
 ## Turn down AWS Elastic Container Usage
 1. Elastic Container Service -> Clusters -> GitPod... 
