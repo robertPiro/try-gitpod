@@ -9,7 +9,13 @@ object Week01 {
         println(s"""${l} apply fac ${l.map(fac)} """ )
         loop(3):
             x => println("*"*x)
+        printPascal(6)
+        val balances = Seq("(if (zero? x) max (/ 1 x))", "I told him (that it’s not (yet) done). (But he wasn’t listening)",
+        ":-)", "())(" )
+        balances.foreach(x => println(s"$x is ${if balance(x) then "" else "not"} balanced "))
 
+        val denom = List(1,2,5,10,20,50)
+        countChange(4, denom)
 
     def newton_raphson(f:Double => Double, fprime: Double => Double, start_value:Double, iter:Int =1000):Double =
         if iter <= 0
@@ -36,6 +42,47 @@ object Week01 {
                 rec(k-1)
         rec(n)
 
+    def pascal(row: Int, col: Int):Int =
+      if row == col then 1
+      else
+          if col== 0 then 1
+          else
+              pascal(row-1, col-1) + pascal(row-1, col)
 
 
+    def printPascal(rows: Int)=
+      for row <- 0 to rows
+          col <- 0 to row
+      do
+          print(pascal(row,col))
+          print("  ")
+          if row == col then println()
+
+
+    def balance(chars: String): Boolean =
+        def rec(chars:List[Char], openPar:Int=0): Boolean =
+            if chars.isEmpty then openPar == 0
+            else chars.head match
+                case '(' => rec(chars.tail, openPar + 1)
+                case ')' => openPar > 0 && rec(chars.tail, openPar - 1)
+                case _ => rec(chars.tail, openPar)
+        rec(chars.toList)
+
+    def countChange(money: Int, coins: List[Int]): Int = {
+        def rec (money:Int, coins:List[Int]): List[List[Int]] =
+            if money == 0 then List(Nil)
+            else 
+                if coins.isEmpty then Nil
+                else
+                    val coin = coins.head
+                    if coin > money then Nil
+                    else 
+                        val res = rec(money - coin, coins) ++ rec(money - coin, coins.tail)
+                        res.map(x => coin :: x)
+
+        val res = rec(money).filter(change => change.sum() == money)
+        println("Hello")
+        println(rec(money).mkString("\n"))
+        res.size
+    }
 }
