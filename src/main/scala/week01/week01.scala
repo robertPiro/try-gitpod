@@ -15,7 +15,7 @@ object Week01 {
         balances.foreach(x => println(s"$x is ${if balance(x) then "" else "not"} balanced "))
 
         val denom = List(1,2,5,10,20,50)
-        countChange(4, denom)
+        print(countChange(4, denom))
 
     def newton_raphson(f:Double => Double, fprime: Double => Double, start_value:Double, iter:Int =1000):Double =
         if iter <= 0
@@ -77,12 +77,10 @@ object Week01 {
                     val coin = coins.head
                     if coin > money then Nil
                     else 
-                        val res = rec(money - coin, coins) ++ rec(money - coin, coins.tail)
-                        res.map(x => coin :: x)
-
-        val res = rec(money).filter(change => change.sum() == money)
-        println("Hello")
-        println(rec(money).mkString("\n"))
+                        val res = rec(money - coin, coins)
+                        res.map(x => coin :: x) ++ rec(money, coins.tail)
+        val uniqueCoins = coins.toSet.filter(x => x > 0).toList.sorted
+        val res = rec(money, uniqueCoins)
         res.size
     }
 }
