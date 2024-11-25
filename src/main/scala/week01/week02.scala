@@ -49,11 +49,12 @@ object Rational:
         else gcd(y, x % y) 
 
 
-class Rational(val num: Int, val denom:Int):
+case class Rational(val num: Int, val denom:Int):
+    require(denom == 0 ,"Rational instantiated with denominator 0.")
+
     override def toString(): String = s"(${num}/${denom})"
     
     val rationalized: Rational = 
-        if denom == 0 then throw Exception("Rational instantiated with denominator 0.")
         val gcd = Rational.gcd(abs(num), abs(denom))
         if gcd == 1 then 
             if denom < 0 then Rational(-1* num, -1*denom) else this 
@@ -91,8 +92,7 @@ class Rational(val num: Int, val denom:Int):
     infix def - (other:Rational) =
         this + (other * -1)
         
-        
-
-
+    def my_add( other:Rational) = 
+        this + other
 
     
