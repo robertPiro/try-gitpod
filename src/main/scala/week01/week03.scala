@@ -1,6 +1,10 @@
 package week01
 import math.max
-@main def main() = {}
+@main def week03() = 
+    var t:IntSet = E
+    t = t.include(3)
+    t = t.include(5)
+    println(t.prettyPrint.mkString("\n"))
 
 sealed trait IntSet:
     def contains(elem: Int): Boolean
@@ -11,12 +15,15 @@ sealed trait IntSet:
     def balancingFactor: Int = this match
         case E => 0
         case n: Node => n.right.height - n.left.height
+    def prettyPrint:List[String]
     
     
 
 case object E extends IntSet:
     def contains(elem: Int): Boolean = false
     def include(elem: Int): Node = Node(elem, E,E)
+    override def toString():String = "E"
+    def prettyPrint = List(" E ")
 
 
 case class Node(x: Int, left: IntSet, right:IntSet) extends IntSet:
@@ -52,3 +59,31 @@ case class Node(x: Int, left: IntSet, right:IntSet) extends IntSet:
             case l : Node => 
                 val new_left = l.rotateLeft
                 Node(x, new_left, right).rotateRight
+
+
+
+    def prettyPrint: List[String] =
+        // invariant: every line has the same width
+        // every line has an odd width
+        var ls = left.prettyPrint // List cannot be empty
+        var rs = right.prettyPrint
+        val lsize = ls.head.size 
+        val rsize = rs.head.size
+
+        // making lists same length and combine
+        if ls.size < rs.size 
+        then ls = (0 to rs.size).foldLeft(ls): 
+            (acc, i) => if i >= ls.size then acc :+ " "*lsize else acc
+        else rs = (0 to ls.size).foldLeft(rs):
+            (acc, i) => if i >= rs.size then acc :+ " "*rsize else acc
+
+        var subtree = ls.zip(rs).map( (l, r) => l + " " + r)
+        val lhb = (" " * (lsize/2)) + ("-"* (lsize-lsize/2))  // same size as lsize
+        val rhb = ("-" * (rsize-rsize/2)) + (" " * (rsize/2)) // same size as rsize
+        subtree = (lhb + '+' + rhb) +: subtree
+        
+        var n = " " + x.toString() + " "
+        n = if n.size %2 ==0 then n +" " else n
+
+        val topl = " " *(lsize - n.size/2) + n + " "*(rsize - n.size/2)
+        topl +: subtree
