@@ -4,6 +4,10 @@ import math.max
     var t:IntSet = E
     t = t.include(3)
     t = t.include(5)
+    t = t.include(4)
+    println(t.prettyPrint.mkString("\n"))
+    t = t.balance
+    println("=======================")
     println(t.prettyPrint.mkString("\n"))
 
 sealed trait IntSet:
@@ -16,44 +20,72 @@ sealed trait IntSet:
         case E => 0
         case n: Node => n.right.height - n.left.height
     def prettyPrint:List[String]
+    def balance: IntSet
+    def depthFirst: List[Int]
+
     
     
 
 case object E extends IntSet:
     def contains(elem: Int): Boolean = false
-    def include(elem: Int): Node = Node(elem, E,E)
+    def include(elem: Int): Node = Node(elem, this, this)
     override def toString():String = "E"
     def prettyPrint = List(" E ")
+    def balance = this
+    def depthFirst = List()
+
 
 
 case class Node(x: Int, left: IntSet, right:IntSet) extends IntSet:
     def contains(elem: Int): Boolean = x == elem || left.contains(elem) || right.contains(elem)
     def include(elem: Int): Node = 
         if elem == x then this
-        else if elem > x then right.include(elem)
-            else left.include(elem)
+        else if elem > x then Node(x, left, right.include(elem)).balance
+            else Node(x, left.include(elem), right).balance
+    def depthFirst = (left.depthFirst :+ x) ++ right.depthFirst
+    def breadthFirst = 
+        def rec(ints:List[Int], nodes:List[IntSet]): List[Int] =
+            nodes match
+                case Nil => ints
+                case head::tail => 
+                    head match 
+                        case E => rec(ints, tail)
+                        case Node(x, l, r) => rec(ints :+ x, nodes :+ l :+ r)
+        rec(List(), List(this))
 
-    def rotateLeft: IntSet = 
+    def union(that: IntSet): IntSet =
+        that.depthFirst.foldLeft(this)( (acc, int) => acc.include(int))
+    def balance: Node =
+        balancingFactor match
+            case 2 => right.balancingFactor match
+                case -1 => this.rotateRightLeft
+                case _ =>  this.rotateLeft
+            case -2 => left.balancingFactor match
+                case 1 => this.rotateLeftRight
+                case _ => this.rotateRight
+            case _ => this
+            
+    def rotateLeft: Node = 
         right match
             case E => this
             case r:Node =>
                 val new_left = Node(x, left, r.left)
                 Node(r.x, new_left, r.right)
-    def rotateRight: IntSet =
+    def rotateRight: Node =
         left match
             case E => this
             case l:Node =>
                 val new_right = Node(x, l.right, right)
                 Node(l.x, l.left, new_right)
 
-    def rotateRightLeft: IntSet =
+    def rotateRightLeft: Node =
         right match
             case E => this
             case r : Node => 
                 val new_right = r.rotateRight
                 Node(x, left, new_right).rotateLeft
 
-    def rotateLeftRight: IntSet =
+    def rotateLeftRight: Node =
         left match
             case E => this
             case l : Node => 
