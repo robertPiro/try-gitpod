@@ -1,8 +1,8 @@
 package week01
 import math.max
 sealed trait MySet[+T]:
-    def contains[S >: T](elem: S): Boolean
-    def include[S >: T](elem: S): MySet[S]
+    def contains[S >: T](elem: S)(using ord:Ordered[S]): Boolean
+    def include[S >: T](elem: S)(using ord:Ordered[S]): MySet[S]
     def height: Int = this match
         case E => 0
         case _: Singleton[T] => 1 
@@ -19,16 +19,16 @@ sealed trait MySet[+T]:
     def breadthFirst: List[T]
 
 case object E extends MySet[Nothing]:
-    def contains[S >: T](elem: Any): Boolean = false
-    def include[S >: Nothing](elem: S): Singleton[S] = Singleton(elem)
+    def contains[S >: Nothing](elem: S)(using ord:Ordered[S]): Boolean = false
+    def include[S >: Nothing](elem: S)(using ord:Ordered[S]): Singleton[S] = Singleton(elem)
     override def toString():String = "E"
     def balance = this
     def depthFirst = List()
     def breadthFirst = List()
 
-case class Singleton[T] (val x:T) extends MySet[T]:
-    def contains(elem: Any): Boolean = x == elem
-    def include(elem: T)(using ord:Ordered[T]): MySet[T] = 
+case class Singleton[+T] (val x:T) extends MySet[T]:
+    def contains[S >: T](elem: S)(using ord:Ordered[S]): Boolean = x == elem
+    def include[S >: T](elem: S)(using ord:Ordered[S]): MySet[S] = 
         if elem == x then this
         else if ord.>(x) then Node(x, E, Singleton(x))
         else Node(x, Singleton(x), E)
@@ -38,13 +38,13 @@ case class Singleton[T] (val x:T) extends MySet[T]:
     def depthFirst = List(x)
     def breadthFirst = List(x)
 
-case class Node[T](val x: T, left: MySet[T], right:MySet[T]) extends MySet[T]:
-    def contains(elem: T)(using ord:Ordered[T]): Boolean = 
+case class Node[+T](val x: T, left: MySet[T], right:MySet[T]) extends MySet[T]:
+    def contains[S >: T](elem: S)(using ord:Ordered[S]): Boolean = 
         if x == elem then true
         else if ord.<(x) then left.contains(elem)
         else right.contains(elem)
 
-    def include(elem: T)(using ord:Ordered[T]): Node[T] = 
+    def include[S >: T](elem: S)(using ord:Ordered[S]): Node[S] = 
            if elem == x then this
            else if ord.>(x) then Node(x, left, right.include(elem)).balance
            else Node(x, left.include(elem), right).balance
@@ -61,8 +61,8 @@ case class Node[T](val x: T, left: MySet[T], right:MySet[T]) extends MySet[T]:
                         case Node(x, l, r) => rec(elems :+ x, nodes :+ l :+ r)
         rec(List(), List(this))
 
-    def union(that: MySet[T])(using Ordered[T]): MySet[T] =
-        that.depthFirst.foldLeft(this)( (acc, int) => acc.include(int))
+    def union[S >: T](that: MySet[S])(using Ordered[S]): MySet[S] =
+        that.depthFirst.foldLeft(this)( (acc:MySet[S], int:S) => acc.include(int))
     def balance: Node[T] =
         balancingFactor match
             case 2 => right.balancingFactor match
@@ -102,7 +102,7 @@ case class Node[T](val x: T, left: MySet[T], right:MySet[T]) extends MySet[T]:
 
 
 
-    def prettyPrint: List[String] =
+    override def prettyPrint: List[String] =
         // invariant: every line has the same width
         // every line has an odd width
         var ls = left.prettyPrint // List cannot be empty
