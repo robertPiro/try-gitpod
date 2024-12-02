@@ -1,5 +1,6 @@
 package week01
 import math.max
+
 @main def week03() = 
     var t:IntSet = E
     t = t.include(3)
