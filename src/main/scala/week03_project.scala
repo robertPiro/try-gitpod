@@ -7,8 +7,12 @@ import math.Ordering
     t = t.include(4)
     println(t.prettyPrint.mkString("\n"))
     println("=======================")
-    t = t.balance
-    println(t.prettyPrint.mkString("\n"))
+    var s: MySet[Int] = E
+    s = s.include(3)
+    s = s.include(5)
+    s = s.include(7)
+    println(s.prettyPrint.mkString("\n"))
+
 
 
 sealed trait MySet[+T]:
@@ -57,8 +61,8 @@ case class Node[+T](val x: T, left: MySet[T], right:MySet[T]) extends MySet[T]:
 
     def include[S >: T](elem: S)(using ord:Ordering[S]): Node[S] = 
            if elem == x then this
-           else if ord.gt(elem,x) then Node(x, left, right.include(elem))
-           else Node(x, left.include(elem), right)
+           else if ord.gt(elem,x) then Node(x, left, right.include(elem)).balance
+           else Node(x, left.include(elem), right).balance
 
     def depthFirst: List[T] = (left.depthFirst :+ x) ++ right.depthFirst
     def breadthFirst: List[T] = 
@@ -75,7 +79,6 @@ case class Node[+T](val x: T, left: MySet[T], right:MySet[T]) extends MySet[T]:
     def union[S >: T](that: MySet[S])(using Ordering[S]): MySet[S] =
         that.depthFirst.foldLeft(this)( (acc:MySet[S], int:S) => acc.include(int))
     def balance: Node[T] =
-        println(s"balancing factor in x=$x is: ${balancingFactor}")
         balancingFactor match
             case 2 => right.balancingFactor match
                 case -1 => this.rotateRightLeft
@@ -92,19 +95,22 @@ case class Node[+T](val x: T, left: MySet[T], right:MySet[T]) extends MySet[T]:
                     case (E, E) => Singleton(x)
                     case _ => Node(x, left, r.left)
                 Node(r.x, new_left, r.right)
+            case Singleton(l) => Node(l, Singleton(x), E)
             case _ => this
     def rotateRight: Node[T] =
         left match
             case l: Node[T] =>
-                println("HERE")
                 val new_right = (l.right, right) match
                     case (E,E) => Singleton(x)
                     case _ => Node(x, l.right, right)
                 Node(l.x, l.left, new_right)
-            // Argue there is only this case!
+            // subtree must have balancing factor of -1 or 0
+            // if tree is -1 then right is E and rotation moves root into singleton
+            // if tree is 0 the right is singleton and tree was unbalanced when
+            // elem of left or elem of right was inserted. this is in contradiction 
+            // to the properties of AVL trees.
             case Singleton(l) => Node(l, E, Singleton(x))
             case _ => 
-                println(s"Drats: x=$x")
                 this
 
     def rotateRightLeft: Node[T] =
