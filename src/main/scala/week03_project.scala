@@ -117,9 +117,6 @@ case class Node[+T](val x: T, left: MySet[T], right:MySet[T]) extends MySet[T]:
         right match
             case r : Node[T] => 
                 val new_right = r.rotateRight
-                println("================== New Right")
-                println(new_right.prettyPrint.mkString("\n"))
-                println("===========================")
                 Node(x, left, new_right).rotateLeft
             case _ => this
 
