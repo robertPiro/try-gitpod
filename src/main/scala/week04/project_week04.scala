@@ -3,12 +3,17 @@ package week04
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Queue
 
-@main def project_week04 = {}
-  
+@main def project = 
+    val str = "this is a little story."
+    val leaves  = HuffmanTree(str)
+    val tree = HuffmanTree.buildTree(leaves)
+    println(tree.prettyPrint.mkString("\n"))
 
-trait HuffmanTree(val weight:Int):
-    def leafs(s:String): List[HuffmanLeaf] = leafs(s.toCharArray())
-    def leafs(cs:Array[Char]): List[HuffmanLeaf] = 
+
+object HuffmanTree:
+
+    def apply(s:String): List[HuffmanLeaf] = HuffmanTree(s.toCharArray())
+    def apply(cs:Array[Char]): List[HuffmanLeaf] = 
         val hmap = HashMap[Char, Int]()
         cs.foldLeft(hmap)((acc,char) => 
             acc.updateWith(char):
@@ -20,7 +25,7 @@ trait HuffmanTree(val weight:Int):
             .toList
             .map( (char,count) => HuffmanLeaf(char, count) )
             .sortWith((a,b) => a.weight < b.weight)
-    
+
     def buildTree(ascLeaves:List[HuffmanLeaf]): HuffmanTree =
         def pullSmallest(ascLeaves:List[HuffmanLeaf], nodeQ:Queue[HuffmanTree]): (HuffmanTree, List[HuffmanLeaf], Queue[HuffmanTree]) = 
             ascLeaves match
@@ -30,7 +35,7 @@ trait HuffmanTree(val weight:Int):
                         else (n, ascLeaves, queue)
                     case _ => (head, next, nodeQ)
                 case Nil => (nodeQ.head, Nil, nodeQ.tail)
-            
+
         def rec(ascLeaves:List[HuffmanLeaf], nodeQ:Queue[HuffmanTree]): HuffmanTree = 
             // requires that at least one collection is non-empty
             val (low0, newLeaves0, newQueue0) = pullSmallest(ascLeaves, nodeQ)
@@ -41,16 +46,61 @@ trait HuffmanTree(val weight:Int):
                     val newNode = HuffmanNode(low0, low1)
                     rec(newLeaves1, newQueue1 :+ newNode) // ensures that at least Queue is non-empty
 
-            
-                 
+
+
         ascLeaves match
             case Nil => throw Exception("List of leaves is empty. Cannot compute Huffman tree.")
             case _ => rec(ascLeaves, Queue())
 
-case class HuffmanNode(zero: HuffmanTree, one: HuffmanTree) extends HuffmanTree(zero.weight + one.weight)
-case class HuffmanLeaf(char: Char, weight:Int) extends HuffmanTree(weight)
 
-/**** The original instruction for the Huffman algorithm was as follows:
+trait HuffmanTree(val weight:Int):
+    def encoder(prefix: String): HashMap[Char, String]
+    def prettyPrint: List[String]
+case class HuffmanNode(zero: HuffmanTree, one: HuffmanTree) extends HuffmanTree(zero.weight + one.weight):
+    def encoder(prefix:String): HashMap[Char, String] = 
+        val zero_map = zero.encoder(prefix+"0")
+        val one_map = one.encoder(prefix+"1")
+        zero_map ++ one_map
+
+    private def mkSameLen(zero_str:List[String], one_str:List[String]): (List[String], List[String]) =
+        val m = math.max(zero_str.size, one_str.size)
+        def makeLen_m(l:List[String]): List[String] =
+            if (m - l.size) > 0 then makeLen_m(l.appended(" " * l.head.size)) else l
+        (makeLen_m(zero_str) , makeLen_m(one_str))
+
+    def mkHandlebar(m:Int, reverse:Boolean = false):String = 
+        val bar =  "-" * (m/2)
+        val pad = " " * (m - bar.size - 1)
+        if reverse then bar + "+" + pad
+        else pad + "+" +bar
+
+
+    def prettyPrint: List[String] = 
+        val (zero_str, one_str) = mkSameLen(zero.prettyPrint, one.prettyPrint)
+        val bulk = zero_str
+            .zip(one_str)
+            .map((z,o) => z + " " + o)
+        val left_handle_bar = mkHandlebar(zero_str.head.size)
+        val right_handle_bar = mkHandlebar(one_str.head.size, true)
+
+        val line1 = " " * left_handle_bar.size + "|" + " " * right_handle_bar.size
+        val line2 = left_handle_bar + "+" + right_handle_bar
+        val line0_l = " " * ((line1.size - weight.toString().size) /2) + weight.toString()
+        val line0_r = " " * (line1.size - line0_l.size)
+        val line0 = line0_l + line0_r
+        line0 +: line1 +: line2 +: bulk
+
+
+case class HuffmanLeaf(char: Char, freq:Int) extends HuffmanTree(freq):
+    def encoder(prefix:String) = HashMap(char -> prefix)
+    def prettyPrint = 
+        if char.toString() =="/" then List( s""" "$char"/$freq """ ) 
+        else if char.toString() == " " then List( s""" "$char"/$freq """ ) 
+            else List(s" $char/$freq ")
+
+
+/* 
+ *    The original instruction for the Huffman algorithm was as follows:
  *    0. create the List of ordered leaves then
  *    1. combine the first two elements in a node and push this new
  *    2. node down the list until the list is ordered again (insertion sort)
@@ -86,4 +136,4 @@ case class HuffmanLeaf(char: Char, weight:Int) extends HuffmanTree(weight)
  *    z a maximal element in Q, and z is the sum of the two minimal head elements of Q and L. QED
  *    
  *   
- * /
+ */

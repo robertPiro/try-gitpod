@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "type": "scala",
             "request": "launch",
@@ -54,6 +55,15 @@
             "request": "launch",
             "name": "Week04",
             "mainClass": "week04.test04", //specify pkg here: com.example.Main
+            //"buildTarget": "app", //for cases with multpl packages?
+            "args": [],
+            "jvmOptions": ["-XX:+UseContainerSupport", "-XX:ActiveProcessorCount=1"]
+          },
+          {
+            "type": "scala",
+            "request": "launch",
+            "name": "Project04",
+            "mainClass": "week04.project", //specify pkg here: com.example.Main
             //"buildTarget": "app", //for cases with multpl packages?
             "args": [],
             "jvmOptions": ["-XX:+UseContainerSupport", "-XX:ActiveProcessorCount=1"]
