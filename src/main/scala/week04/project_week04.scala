@@ -7,8 +7,17 @@ import scala.collection.mutable.Queue
     val str = "this is a little story."
     val leaves  = HuffmanTree(str)
     val tree = HuffmanTree.buildTree(leaves)
-    println(tree.prettyPrint.mkString("\n"))
+    // println(tree.prettyPrint.mkString("\n"))
+    val code = tree.encode(str)
+    println("Code: " + code)
+    val orig = tree.decode(code)
+    println("Orig: " + orig)
+    // val str1 = "a"*5 + "b"*9 + "c"*12 + "d"*13 + "e"*16 + "f"*45
+    // val leaves1  = HuffmanTree(str1)
+    // val tree1 = HuffmanTree.buildTree(leaves1)
+    // println(tree1.prettyPrint.mkString("\n"))
 
+    
 
 object HuffmanTree:
 
@@ -53,9 +62,32 @@ object HuffmanTree:
             case _ => rec(ascLeaves, Queue())
 
 
-trait HuffmanTree(val weight:Int):
+sealed trait HuffmanTree(val weight:Int):
+    def encode(str: String): String = 
+        def rec(msg: String, result:String, encoder_map:HashMap[Char,String]): String = 
+            if msg.isEmpty() then result
+            else
+                val code = encoder_map(msg.head)
+                rec(msg.tail, result + code, encoder_map)
+        rec(str, "", this.encoder(""))
+    
     def encoder(prefix: String): HashMap[Char, String]
     def prettyPrint: List[String]
+    def decode(bits:String): String = 
+        def rec(msg: String, result:String): String =
+            val (remainder, res) = dec(msg, result)
+            if remainder.nonEmpty then rec(remainder, res) else res
+        rec(bits, "")
+
+    private def dec (msg: String, result:String): (String, String) =
+        this match
+            case HuffmanNode(zero, one) => 
+                if msg.isEmpty() then throw Exception("Code stopped at an inner node :( ")
+                else if msg.head == '0' then zero.dec(msg.tail, result)
+                else one.dec(msg.tail, result)
+            case HuffmanLeaf(char, freq) => (msg, result.appended(char))
+        
+        
 case class HuffmanNode(zero: HuffmanTree, one: HuffmanTree) extends HuffmanTree(zero.weight + one.weight):
     def encoder(prefix:String): HashMap[Char, String] = 
         val zero_map = zero.encoder(prefix+"0")
@@ -85,7 +117,7 @@ case class HuffmanNode(zero: HuffmanTree, one: HuffmanTree) extends HuffmanTree(
 
         val line1 = " " * left_handle_bar.size + "|" + " " * right_handle_bar.size
         val line2 = left_handle_bar + "+" + right_handle_bar
-        val line0_l = " " * ((line1.size - weight.toString().size) /2) + weight.toString()
+        val line0_l = " " * (left_handle_bar.size - weight.toString().size/2) + weight.toString()
         val line0_r = " " * (line1.size - line0_l.size)
         val line0 = line0_l + line0_r
         line0 +: line1 +: line2 +: bulk
