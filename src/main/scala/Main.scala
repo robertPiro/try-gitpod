@@ -1,5 +1,4 @@
-object Main {
-  def main(args:Array[String]):Unit =
+
+@main def main():Unit =
     println("Hello World!")
-}
 
