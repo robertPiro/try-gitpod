@@ -18,3 +18,4 @@ lazy val livechart = project
     }
   )
     libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "2.8.0"
+    libraryDependencies += "com.raquo" %%% "laminar" % "17.2.0"
