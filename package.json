@@ -8,7 +8,13 @@
     "build": "vite build",
     "preview": "vite preview"
   },
+  "_comment": "RERUN npm install",
   "devDependencies": {
-    "vite": "^6.0.3"
+    "vite": "^6.0.3",
+    "typescript": "4.6.2",
+    "@types/chart.js": "2.9.29"
+  },
+  "dependencies":{
+    "chart.js": "2.9.4"
   }
 }

@@ -5,6 +5,7 @@ import org.scalajs.linker.interface.ModuleSplitStyle.SmallModulesFor
 lazy val livechart = project
   .in(file("."))
   .enablePlugins(ScalaJSPlugin)
+  .enablePlugins(ScalablyTypedConverterExternalNpmPlugin)
   .settings(
     scalacOptions ++= Seq("-encoding", "utf-8", "-deprecation", "-feature"),
 
@@ -15,7 +16,9 @@ lazy val livechart = project
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.ESModule)
         .withModuleSplitStyle(SmallModulesFor(List("livechart")))
-    }
+    },
+    externalNpm := baseDirectory.value
   )
     libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "2.8.0"
     libraryDependencies += "com.raquo" %%% "laminar" % "17.2.0"
+
