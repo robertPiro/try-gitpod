@@ -3,7 +3,7 @@ image:
 tasks:
   - init: sbt compile
   - name: Run
-    command: sbt run
+    command: npm run dev
 
 vscode:
   extensions:
