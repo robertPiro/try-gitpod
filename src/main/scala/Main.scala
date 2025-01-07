@@ -1,37 +1,77 @@
 import scala.scalajs.js
 import org.scalajs.dom
+
 import scala.math
 import com.raquo.laminar.api.L.{*, given}
+import com.raquo.laminar.nodes.ReactiveHtmlElement
+import org.scalajs.dom.HTMLInputElement
+
 
 @main def viteproject():Unit =
-    renderOnDomContentLoaded(
-        dom.document.querySelector("#app"), Main.appElement()
-    )
+    println("Hello World")
+    val myList = List(DataItem("one", 1.0), DataItem("one", 1.0), DataItem("one", 1.0))
+    def mkstr(j:Int, outer:DataItem): Seq[String] =
+        for (x,i) <- myList.zipWithIndex
+        yield
+            s"$j == $i = ${outer.id == x.id}"
+    val strs = myList.zipWithIndex.map:
+        (item, j) => mkstr(j, item).mkString("\t")
+    println(strs.mkString("\n"))
+
+//    renderOnDomContentLoaded(
+//        dom.document.querySelector("#app"), Main.appElement()
+//    )
 
 object Main:
     def appElement(): Element = 
         div(
             h1("Hello Scala.js, Vite and Laminar!"),
             renderDataTable,
-            renderDataGraph
+            //renderDataGraph
+
         )
-    //Var: mutible container for (ideally immutable) data to be propagated thru Laminar   
+
+    //Var: mutable container for (ideally immutable) data to be propagated thru Laminar
     val dataVar = Var(List(DataItem("one", 1.0)))
     val dataSignal = dataVar.signal  //read-only view of var
-    //We cannot directly effect changes but only schedule changes which happen 
+    //We cannot directly affect changes but only schedule changes which happen
     //on the following Event-Loop tick. This is how ScalaJS steps through the program
     //the ticks update the state of Var and the signals propagate transformations of
     //Var back to the UI.  
-    def addDataItem(item:DataItem) = dataVar.update(dataList => dataList :+ item)
+    def addDataItem(item: DataItem) = dataVar.update(dataList => dataList :+ item)
     def rmDataItem(id: DataID) = dataVar.update(dataList => dataList.filter(_.id != id))
-    
+
+    def dataItemUpdater[A](id: DataID, f: (DataItem, A) => DataItem): Observer[A] =
+        dataVar.updater[A]:
+            //data: contents of var, which we know to be List
+            //newValue: the only free variable
+            (data, newValue) => data.map(item => if item.id == id then f(item, newValue) else item)
+
+    def inputStringElement(valueSignal: Signal[String], valueUpdater: Observer[String]):Input =
+        input(
+            typ := "text",
+            // value reads from the signal which is set by valueUpdater. Note that the valueUpdater
+            // acts like a sinkhole, writing to dataVar which then surfaces as the valueSignal setting
+            // the value of the input field. For this reason, intercepting and delaying the signal here
+            // is not useful.
+            controlled(
+                onInput.mapToValue --> valueUpdater, // --> dataVar --> valueSignal
+                value <-- valueSignal
+            ),
+        )
+
+
     def renderDataItem(id: DataID, sig: Signal[DataItem]): Element =
         val button0 = button("E", onClick --> (_ => rmDataItem(id)))
+        val inputElement = inputStringElement(
+            sig.map(_.label),
+            dataItemUpdater[String](id, (item, newLabel) => item.copy(label=newLabel)))
         tr(
-            td(child.text <-- sig.map(_.label)),
+            td(inputElement),
             td(child.text <-- sig.map(_.value)),
             td(button0)
         )
+
 
     def renderDataTable: Element =
         val button0 = button("+", onClick --> (_ => addDataItem(DataItem())))
@@ -49,7 +89,7 @@ object Main:
         var optChart: Option[Chart] = None
 
         //function to fill in the chart data
-        def fillInChartData(optChart:Option[Chart])(xyData:List[DataItem]) = 
+        def fillInChartData(optChart:Option[Chart])(xyData:List[DataItem]): Unit =
             for chart <- optChart 
             do
                 chart.data.labels = xyData.map(_.label).toJSArray
@@ -90,15 +130,15 @@ object Main:
                 }
             ),
             dataSignal --> {xyData => fillInChartData(optChart)(xyData)} //extracts data from signal
-
-                  
         )
     end renderDataGraph
 
     
 final class DataID  //will create many instances that are compared by address
 trait DomRefObj(val id: DataID)
-case class DataItem(label: String, value: Double) extends DomRefObj(DataID())
+case class DataItem(label: String, value: Double) extends DomRefObj(DataID()):
+    override def toString(): String = label
+
 object DataItem:
     def apply(): DataItem = DataItem("?", math.random())
 
