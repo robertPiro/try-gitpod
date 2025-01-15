@@ -8,31 +8,21 @@ import org.scalajs.dom.HTMLInputElement
 
 
 @main def viteproject():Unit =
-    println("Hello World")
-    val myList = List(DataItem("one", 1.0), DataItem("one", 1.0), DataItem("one", 1.0))
-    def mkstr(j:Int, outer:DataItem): Seq[String] =
-        for (x,i) <- myList.zipWithIndex
-        yield
-            s"$j == $i = ${outer.id == x.id}"
-    val strs = myList.zipWithIndex.map:
-        (item, j) => mkstr(j, item).mkString("\t")
-    println(strs.mkString("\n"))
-
-//    renderOnDomContentLoaded(
-//        dom.document.querySelector("#app"), Main.appElement()
-//    )
+    renderOnDomContentLoaded(
+        dom.document.querySelector("#app"), Main.appElement()
+    )
 
 object Main:
     def appElement(): Element = 
         div(
             h1("Hello Scala.js, Vite and Laminar!"),
             renderDataTable,
-            //renderDataGraph
+            renderDataGraph
 
         )
 
     //Var: mutable container for (ideally immutable) data to be propagated thru Laminar
-    val dataVar = Var(List(DataItem("one", 1.0)))
+    val dataVar = Var(List( DataItem(DataID(),"one", 1.0)))
     val dataSignal = dataVar.signal  //read-only view of var
     //We cannot directly affect changes but only schedule changes which happen
     //on the following Event-Loop tick. This is how ScalaJS steps through the program
@@ -96,38 +86,36 @@ object Main:
                 chart.data.datasets.get(0).data = xyData.map(_.value).toJSArray
                 chart.update()
 
-        val chartConf = new ChartConfiguration{
+        val chartConf = new ChartConfiguration:
             `type`= ChartType.bar
-            data = new ChartData {
+            data  = new ChartData:
                 datasets = js.Array(
-                    new ChartDataSets {
+                    new ChartDataSets:
                         label = "Price"
                         borderWidth = 1
                         backgroundColor = "green"
-                    },
-                    new ChartDataSets {
+                    ,
+                    new ChartDataSets:
                         label = "Full price"
                         borderWidth = 1
                         backgroundColor = "blue"
-                    }
                 )
-            }
-        }
+
         canvasTag(
             width := "100%",
             height := "200px",
             onMountUnmountCallback(
-                mount = { nodeCtx => 
+                mount = nodeCtx =>
                     val ctx = nodeCtx.thisNode.ref
                     val chart = Chart.apply.newInstance2(ctx, chartConf)
                     optChart = Some(chart) // defined as var above 
-                },
-                unmount = { thisNode => 
+                ,
+                unmount = thisNode =>
                     for chart <- optChart
                     do
                         chart.destroy()
                     optChart = None // defined as var above
-                }
+
             ),
             dataSignal --> {xyData => fillInChartData(optChart)(xyData)} //extracts data from signal
         )
@@ -135,12 +123,12 @@ object Main:
 
     
 final class DataID  //will create many instances that are compared by address
-trait DomRefObj(val id: DataID)
-case class DataItem(label: String, value: Double) extends DomRefObj(DataID()):
+//Case class needs `id` in constructor args for func .copy(...) to copy it.
+case class DataItem(id: DataID, label: String, value: Double):
     override def toString(): String = label
 
 object DataItem:
-    def apply(): DataItem = DataItem("?", math.random())
+    def apply(): DataItem = DataItem(DataID(), "?", math.random())
 
 
 
